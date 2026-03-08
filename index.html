@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ODS 14 — Vida Submarina</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --sky:    #e0f7fa;
+      --light:  #b2ebf2;
+      --mid:    #4dd0e1;
+      --teal:   #00acc1;
+      --ocean:  #0097a7;
+      --deep:   #006064;
+      --darker: #004d55;
+      --white:  #ffffff;
+      --text:   #012d32;
+      --sub:    #00525e;
+    }
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body { background:var(--sky); color:var(--text); font-family:'DM Sans',sans-serif; overflow-x:hidden; }
+
+    /* BUBBLES */
+    .bubbles { position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden; }
+    .bubble {
+      position:absolute; border-radius:50%;
+      background:radial-gradient(circle at 30% 30%, rgba(0,172,193,0.18), rgba(0,150,180,0.04));
+      border:1px solid rgba(0,172,193,0.2);
+      animation:rise linear infinite;
+    }
+    @keyframes rise {
+      0%   { transform:translateY(110vh); opacity:0; }
+      10%  { opacity:1; }
+      90%  { opacity:0.5; }
+      100% { transform:translateY(-20vh); opacity:0; }
+    }
+    .bubble:nth-child(1)  { width:14px;height:14px;left:6%;  animation-duration:12s;animation-delay:0s; }
+    .bubble:nth-child(2)  { width:8px; height:8px; left:18%; animation-duration:9s; animation-delay:2s; }
+    .bubble:nth-child(3)  { width:20px;height:20px;left:32%; animation-duration:14s;animation-delay:1s; }
+    .bubble:nth-child(4)  { width:6px; height:6px; left:50%; animation-duration:8s; animation-delay:4s; }
+    .bubble:nth-child(5)  { width:12px;height:12px;left:64%; animation-duration:11s;animation-delay:3s; }
+    .bubble:nth-child(6)  { width:16px;height:16px;left:78%; animation-duration:13s;animation-delay:0.5s; }
+    .bubble:nth-child(7)  { width:10px;height:10px;left:90%; animation-duration:10s;animation-delay:6s; }
+    .bubble:nth-child(8)  { width:24px;height:24px;left:14%; animation-duration:16s;animation-delay:5s; }
+    .bubble:nth-child(9)  { width:5px; height:5px; left:42%; animation-duration:7s; animation-delay:8s; }
+    .bubble:nth-child(10) { width:18px;height:18px;left:57%; animation-duration:15s;animation-delay:2.5s; }
+
+    /* NAV */
+    nav {
+      position:fixed;top:0;width:100%;z-index:100;
+      display:flex;justify-content:space-between;align-items:center;
+      padding:1.1rem 4rem;
+      background:rgba(224,247,250,0.93);
+      backdrop-filter:blur(10px);
+      border-bottom:1px solid rgba(0,172,193,0.2);
+    }
+    .nav-logo { font-family:'Playfair Display',serif;font-size:1rem;font-weight:900;color:var(--deep); }
+    .nav-logo span { color:var(--teal);font-style:italic; }
+    .nav-links { display:flex;gap:2rem;list-style:none; }
+    .nav-links a { color:var(--sub);text-decoration:none;font-size:0.8rem;letter-spacing:0.07em;text-transform:uppercase;font-weight:500;transition:color .3s; }
+    .nav-links a:hover { color:var(--ocean); }
+
+    /* HERO */
+    #hero {
+      position:relative;min-height:100vh;
+      display:flex;flex-direction:column;justify-content:center;align-items:center;
+      text-align:center;padding:0 2rem;overflow:hidden;
+      background:radial-gradient(ellipse 90% 60% at 50% 110%, rgba(0,151,167,0.3) 0%, transparent 70%),
+                 linear-gradient(180deg,var(--sky) 0%,#c8f2f6 100%);
+    }
+    .hero-rays {
+      position:absolute;inset:0;pointer-events:none;
+      background:repeating-conic-gradient(from -10deg at 50% 115%, rgba(0,172,193,0.06) 0deg, transparent 7deg, transparent 14deg);
+      animation:sway 9s ease-in-out infinite alternate;
+    }
+    @keyframes sway { from{transform:rotate(-3deg) scale(1.05);}to{transform:rotate(3deg) scale(1);} }
+    .hero-badge {
+      display:inline-flex;align-items:center;gap:0.5rem;
+      background:rgba(0,172,193,0.12);border:1px solid rgba(0,172,193,0.4);
+      border-radius:100px;padding:0.4rem 1.2rem;
+      font-size:0.72rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--ocean);
+      margin-bottom:2rem;font-weight:600;animation:fadeUp .8s ease both;
+    }
+    .hero-badge::before { content:'';width:6px;height:6px;border-radius:50%;background:var(--teal);animation:pulse 2s ease-in-out infinite; }
+    @keyframes pulse { 0%,100%{opacity:1;}50%{opacity:0.3;} }
+    .hero-ods {
+      font-family:'Playfair Display',serif;
+      font-size:clamp(5rem,18vw,13rem);font-weight:900;line-height:.85;
+      color:transparent;
+      background:linear-gradient(135deg,var(--teal) 0%,var(--ocean) 50%,var(--deep) 100%);
+      -webkit-background-clip:text;background-clip:text;
+      letter-spacing:-0.03em;animation:fadeUp .9s .1s ease both;
+    }
+    .hero-title { font-family:'Playfair Display',serif;font-size:clamp(1.8rem,5vw,3.2rem);font-weight:400;font-style:italic;color:var(--deep);margin-top:.5rem;animation:fadeUp .9s .2s ease both; }
+    .hero-sub { font-size:clamp(.9rem,2vw,1rem);font-weight:300;color:var(--sub);max-width:540px;line-height:1.75;margin-top:1.5rem;animation:fadeUp .9s .35s ease both; }
+    .hero-cta { display:flex;gap:1rem;margin-top:2.5rem;flex-wrap:wrap;justify-content:center;animation:fadeUp .9s .5s ease both; }
+    .btn-primary {
+      padding:.85rem 2.2rem;border-radius:100px;border:none;cursor:pointer;
+      background:linear-gradient(135deg,var(--teal),var(--deep));
+      color:#fff;font-weight:700;font-size:.9rem;letter-spacing:.05em;
+      transition:transform .25s,box-shadow .25s;
+      box-shadow:0 4px 20px rgba(0,151,167,.3);text-decoration:none;display:inline-block;
+    }
+    .btn-primary:hover { transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,151,167,.45); }
+    .btn-outline {
+      padding:.85rem 2.2rem;border-radius:100px;cursor:pointer;
+      background:transparent;border:1.5px solid var(--teal);
+      color:var(--ocean);font-size:.9rem;letter-spacing:.05em;font-weight:600;
+      transition:all .25s;text-decoration:none;display:inline-block;
+    }
+    .btn-outline:hover { background:rgba(0,172,193,.1); }
+    .scroll-hint { position:absolute;bottom:2.5rem;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:.5rem;color:rgba(0,97,107,.5);font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;animation:fadeUp 1s 1s ease both; }
+    .scroll-line { width:1px;height:50px;background:linear-gradient(180deg,rgba(0,172,193,.7),transparent);animation:scrollAnim 2s ease-in-out infinite; }
+    @keyframes scrollAnim { 0%,100%{opacity:1;transform:scaleY(1);}50%{opacity:.4;transform:scaleY(.6);} }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(24px);}to{opacity:1;transform:translateY(0);} }
+
+    /* shared */
+    section { position:relative;z-index:1; }
+    .section-label { font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--teal);margin-bottom:.6rem;font-weight:600; }
+    .section-title { font-family:'Playfair Display',serif;font-size:clamp(2rem,4vw,3rem);font-weight:700;color:var(--deep);line-height:1.15; }
+    .section-title em { color:var(--ocean);font-style:italic; }
+
+    /* STATS CAROUSEL */
+    #stats { padding:7rem 0 5rem;background:linear-gradient(180deg,#c8f2f6 0%,#aeeaf2 100%); }
+    .stats-header { text-align:center;padding:0 2rem;margin-bottom:3rem; }
+    .stats-source {
+      display:inline-block;margin-top:1rem;font-size:.78rem;color:var(--ocean);
+      background:rgba(0,151,167,.1);border:1px solid rgba(0,151,167,.3);
+      border-radius:100px;padding:.3rem 1rem;text-decoration:none;transition:all .3s;
+    }
+    .stats-source:hover { background:rgba(0,151,167,.2); }
+    .carousel-container { position:relative;overflow:hidden; }
+    .carousel-track { display:flex;gap:1.5rem;padding:0 4rem 2rem;transition:transform .5s cubic-bezier(.25,.46,.45,.94); }
+    .stat-card {
+      background:#fff;border:1.5px solid rgba(0,172,193,.2);
+      border-radius:22px;padding:2.2rem 2rem;
+      min-width:260px;flex:0 0 260px;
+      position:relative;overflow:hidden;
+      box-shadow:0 4px 20px rgba(0,130,150,.08);
+      transition:transform .3s,box-shadow .3s;
+    }
+    .stat-card::before { content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--teal),var(--mid)); }
+    .stat-card:hover { transform:translateY(-6px);box-shadow:0 12px 30px rgba(0,130,150,.15); }
+    .stat-num { font-family:'Playfair Display',serif;font-size:3.2rem;font-weight:900;line-height:1;color:var(--ocean); }
+    .stat-unit { font-size:1.3rem;font-weight:400; }
+    .stat-desc { color:var(--sub);font-size:.88rem;line-height:1.6;margin-top:.6rem; }
+    .stat-icon { font-size:2rem;margin-bottom:1rem; }
+    .carousel-controls { display:flex;justify-content:center;align-items:center;gap:1rem;margin-top:1.5rem; }
+    .carousel-btn { width:44px;height:44px;border-radius:50%;border:1.5px solid var(--teal);background:#fff;color:var(--ocean);font-size:1.1rem;cursor:pointer;transition:all .25s;display:flex;align-items:center;justify-content:center; }
+    .carousel-btn:hover { background:var(--teal);color:#fff; }
+    .carousel-dots { display:flex;gap:6px; }
+    .dot { width:8px;height:8px;border-radius:50%;background:rgba(0,172,193,.25);cursor:pointer;transition:all .3s; }
+    .dot.active { background:var(--ocean);width:22px;border-radius:4px; }
+
+    /* ABOUT */
+    #about { padding:7rem 4rem;background:linear-gradient(180deg,#aeeaf2 0%,var(--sky) 100%); }
+    .about-inner { max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:5rem;align-items:center; }
+    .about-visual { position:relative;height:380px; }
+    .ocean-circle { position:absolute;border-radius:50%;background:radial-gradient(circle at 35% 35%,rgba(0,172,193,.35),rgba(0,97,107,.15));border:1.5px solid rgba(0,151,167,.25); }
+    .ocean-circle.c1 { width:300px;height:300px;top:40px;left:40px;animation:float 6s ease-in-out infinite; }
+    .ocean-circle.c2 { width:160px;height:160px;top:15px;left:210px;opacity:.6;animation:float 8s 1s ease-in-out infinite; }
+    .ocean-circle.c3 { width:90px;height:90px;top:200px;left:8px;opacity:.4;animation:float 7s 2s ease-in-out infinite; }
+    @keyframes float { 0%,100%{transform:translateY(0);}50%{transform:translateY(-15px);} }
+    .ocean-label { position:absolute;bottom:0;left:50%;transform:translateX(-50%);font-family:'Playfair Display',serif;font-size:.9rem;font-style:italic;color:var(--ocean);white-space:nowrap; }
+    .about-text p { color:var(--sub);font-size:.98rem;line-height:1.9;margin-top:1.1rem; }
+    .about-text .highlight { display:block;margin-top:1.5rem;background:rgba(0,151,167,.08);border-left:3px solid var(--teal);padding:1rem 1.4rem;border-radius:0 12px 12px 0;font-style:italic;color:var(--deep);font-size:.95rem; }
+
+    /* METAS ZIGZAG */
+    #metas { padding:7rem 0;background:linear-gradient(180deg,var(--sky) 0%,#d6f5f9 100%); }
+    #metas .section-header { text-align:center;padding:0 2rem;margin-bottom:4rem; }
+    .meta-zigzag { display:flex;flex-direction:column; }
+    .meta-row { display:grid;grid-template-columns:1fr 1fr;align-items:stretch;min-height:340px; }
+    .meta-row:nth-child(even) .meta-img  { order:2; }
+    .meta-row:nth-child(even) .meta-info { order:1; }
+    .meta-img { position:relative;overflow:hidden;min-height:340px;display:flex;align-items:center;justify-content:center; }
+    .meta-img-inner { width:100%;height:100%;min-height:340px;background-size:cover;background-position:center;position:relative; }
+    .meta-img-inner::after { content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,97,107,.45),rgba(0,151,167,.2)); }
+    .meta-img-num { position:absolute;bottom:1.5rem;left:1.5rem;font-family:'Playfair Display',serif;font-size:4rem;font-weight:900;color:rgba(255,255,255,.85);z-index:2;line-height:1; }
+    .meta-img-icon { position:absolute;top:50%;left:50%;transform:translate(-50%,-60%);font-size:5rem;z-index:2;filter:drop-shadow(0 4px 12px rgba(0,0,0,.2)); }
+    .meta-info { padding:3.5rem 4rem;background:#fff;display:flex;flex-direction:column;justify-content:center; }
+    .meta-row:nth-child(odd)  .meta-info { background:linear-gradient(135deg,#f0fbfc,#ffffff); }
+    .meta-row:nth-child(even) .meta-info { background:linear-gradient(135deg,#ffffff,#e8f8fa); }
+    .meta-tag { display:inline-block;padding:.3rem 1rem;border-radius:100px;background:rgba(0,151,167,.1);border:1px solid rgba(0,151,167,.3);color:var(--ocean);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;font-weight:600;margin-bottom:1rem; }
+    .meta-info h3 { font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;color:var(--deep);margin-bottom:.8rem;line-height:1.25; }
+    .meta-info p { color:var(--sub);font-size:.93rem;line-height:1.8; }
+    .img-m1 { background:linear-gradient(135deg,#0097a7,#00bcd4,#4dd0e1); }
+    .img-m2 { background:linear-gradient(135deg,#006064,#00838f,#4db6ac); }
+    .img-m3 { background:linear-gradient(135deg,#01579b,#0277bd,#039be5); }
+    .img-m4 { background:linear-gradient(135deg,#1b5e20,#2e7d32,#66bb6a); }
+    .img-m5 { background:linear-gradient(135deg,#004d40,#00695c,#4db6ac); }
+    .img-m6 { background:linear-gradient(135deg,#e65100,#ef6c00,#ffa726); }
+
+    /* ACCIONES */
+    #acciones { padding:7rem 4rem;background:linear-gradient(180deg,#d6f5f9 0%,#aeeaf2 100%); }
+    #acciones .inner { max-width:1000px;margin:0 auto; }
+    .acciones-header { text-align:center;margin-bottom:3.5rem; }
+    .acciones-list { display:flex;flex-direction:column;gap:.9rem; }
+    .accion-item { display:flex;align-items:center;gap:2rem;background:#fff;border:1.5px solid rgba(0,172,193,.15);border-radius:16px;padding:1.4rem 2rem;transition:all .3s;cursor:default;box-shadow:0 2px 10px rgba(0,97,107,.05); }
+    .accion-item:hover { background:rgba(0,151,167,.04);border-color:rgba(0,151,167,.4);padding-left:2.5rem;box-shadow:0 6px 20px rgba(0,97,107,.1); }
+    .accion-num { font-family:'Playfair Display',serif;font-size:2rem;font-weight:900;color:rgba(0,151,167,.3);min-width:48px; }
+    .accion-content h4 { font-size:.95rem;font-weight:600;color:var(--deep);margin-bottom:.25rem; }
+    .accion-content p  { font-size:.83rem;color:var(--sub); }
+    .accion-tag { margin-left:auto;padding:.3rem .9rem;border-radius:100px;font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;white-space:nowrap;font-weight:600; }
+    .tag-urgente { background:rgba(229,57,53,.1);color:#c62828;border:1px solid rgba(229,57,53,.3); }
+    .tag-medio   { background:rgba(249,168,37,.1);color:#e65100;border:1px solid rgba(249,168,37,.3); }
+    .tag-largo   { background:rgba(0,151,167,.1);color:var(--ocean);border:1px solid rgba(0,151,167,.3); }
+
+    /* QUOTE */
+    #quote { padding:6rem 4rem;text-align:center;background:#fff;border-top:1px solid rgba(0,172,193,.2);border-bottom:1px solid rgba(0,172,193,.2); }
+    .quote-text { font-family:'Playfair Display',serif;font-style:italic;font-size:clamp(1.5rem,3vw,2.3rem);line-height:1.45;max-width:760px;margin:0 auto;color:var(--deep); }
+    .quote-text strong { color:var(--ocean); }
+    .quote-author { margin-top:2rem;color:rgba(0,97,107,.55);font-size:.83rem;letter-spacing:.1em; }
+
+    /* AMENAZAS */
+    #amenazas { padding:7rem 4rem;background:linear-gradient(180deg,#aeeaf2 0%,var(--sky) 100%); }
+    #amenazas .inner { max-width:1100px;margin:0 auto; }
+    .threats-header { text-align:center;margin-bottom:3.5rem; }
+    .threats-note { color:var(--sub);margin-top:.8rem;font-size:.88rem; }
+    .threats-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem; }
+    .threat-card { border-radius:20px;padding:2.2rem 1.8rem;background:#fff;text-align:left;transition:transform .3s,box-shadow .3s;box-shadow:0 3px 15px rgba(0,97,107,.07);position:relative;overflow:hidden; }
+    .threat-card:hover { transform:translateY(-5px);box-shadow:0 12px 30px rgba(0,97,107,.13); }
+    .threat-card::before { content:'';position:absolute;top:0;left:0;right:0;height:4px; }
+    .threat-card.t1::before { background:linear-gradient(90deg,#e53935,#ef9a9a); }
+    .threat-card.t2::before { background:linear-gradient(90deg,#f9a825,#ffe082); }
+    .threat-card.t3::before { background:linear-gradient(90deg,#0097a7,#4dd0e1); }
+    .threat-card.t4::before { background:linear-gradient(90deg,#01579b,#4fc3f7); }
+    .threat-card.t5::before { background:linear-gradient(90deg,#6a1b9a,#ce93d8); }
+    .threat-card.t6::before { background:linear-gradient(90deg,#2e7d32,#a5d6a7); }
+    .threat-icon { font-size:2.5rem;margin-bottom:1rem; }
+    .threat-card h3 { font-family:'Playfair Display',serif;font-size:1.15rem;color:var(--deep);margin-bottom:.6rem; }
+    .threat-card p { font-size:.83rem;color:var(--sub);line-height:1.65; }
+    .threat-link { display:inline-flex;align-items:center;gap:.4rem;margin-top:1rem;font-size:.78rem;font-weight:600;color:var(--ocean);text-decoration:none;border-bottom:1px dashed rgba(0,151,167,.4);transition:color .2s,border-color .2s; }
+    .threat-link:hover { color:var(--deep);border-color:var(--deep); }
+    .threat-link::after { content:'→'; }
+
+    /* FOOTER */
+    footer { padding:3rem 4rem;text-align:center;border-top:1px solid rgba(0,172,193,.15);background:#fff; }
+    footer p { color:rgba(0,77,90,.5);font-size:.82rem; }
+    footer strong { color:var(--ocean); }
+    footer a { color:var(--ocean); }
+
+    /* RESPONSIVE */
+    @media(max-width:900px){
+      nav { padding:1rem 1.5rem; }
+      .nav-links { display:none; }
+      .about-inner { grid-template-columns:1fr;gap:3rem; }
+      #about { padding:5rem 2rem; }
+      .meta-row { grid-template-columns:1fr;min-height:auto; }
+      .meta-row:nth-child(even) .meta-img  { order:0; }
+      .meta-row:nth-child(even) .meta-info { order:1; }
+      .meta-img,.meta-img-inner { min-height:220px; }
+      .meta-info { padding:2rem; }
+      .threats-grid { grid-template-columns:1fr 1fr; }
+      #stats,#amenazas,#acciones,#quote { padding:5rem 1.5rem; }
+      .carousel-track { padding:0 1.5rem 2rem; }
+    }
+    @media(max-width:600px){
+      .threats-grid { grid-template-columns:1fr; }
+      .accion-item { flex-wrap:wrap;gap:.8rem; }
+      .accion-tag { margin-left:0; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="bubbles">
+  <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
+  <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
+  <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
+  <div class="bubble"></div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">ODS <span>14</span> Vida Submarina</div>
+  <ul class="nav-links">
+    <li><a href="#about">¿Qué es?</a></li>
+    <li><a href="#stats">Datos</a></li>
+    <li><a href="#metas">Metas</a></li>
+    <li><a href="#acciones">Acciones</a></li>
+    <li><a href="#amenazas">Amenazas</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-rays"></div>
+  <div class="hero-badge">Agenda 2030 · Objetivos de Desarrollo Sostenible</div>
+  <div class="hero-ods">14</div>
+  <h1 class="hero-title">Vida Submarina</h1>
+  <p class="hero-sub">Conservar y utilizar en forma sostenible los océanos, los mares y los recursos marinos para el desarrollo sostenible de nuestro planeta.</p>
+  <div class="hero-cta">
+    <a href="https://sdgs.un.org/goals/goal14" target="_blank" rel="noopener" class="btn-primary">Explorar ODS 14 Oficial →</a>
+    <a href="https://sdgs.un.org/goals/goal14" target="_blank" rel="noopener" class="btn-outline">Artículo ONU</a>
+  </div>
+  <div class="scroll-hint"><span>Descubrir</span><div class="scroll-line"></div></div>
+</section>
+
+<!-- STATS CAROUSEL -->
+<section id="stats">
+  <div class="stats-header">
+    <p class="section-label">El problema en números</p>
+    <h2 class="section-title">Los océanos en <em>crisis</em></h2>
+    <a href="https://www.un.org/sustainabledevelopment/es/oceans/" target="_blank" rel="noopener" class="stats-source">📊 Fuente oficial: ONU — Desarrollo Sostenible, Océanos ↗</a>
+  </div>
+  <div class="carousel-container">
+    <div class="carousel-track" id="carouselTrack">
+      <div class="stat-card"><div class="stat-icon">🌊</div><div class="stat-num">71<span class="stat-unit">%</span></div><p class="stat-desc">de la superficie terrestre está cubierta por océanos, vitales para toda vida en el planeta.</p></div>
+      <div class="stat-card"><div class="stat-icon">🐠</div><div class="stat-num">33<span class="stat-unit">%</span></div><p class="stat-desc">de los bancos de peces marinos están sobreexplotados, más allá de límites biológicamente sostenibles.</p></div>
+      <div class="stat-card"><div class="stat-icon">🗑️</div><div class="stat-num">17M<span class="stat-unit">t</span></div><p class="stat-desc">de plástico contaminan actualmente los océanos — cifra que podría triplicarse para el año 2040.</p></div>
+      <div class="stat-card"><div class="stat-icon">⚗️</div><div class="stat-num">30<span class="stat-unit">%</span></div><p class="stat-desc">más ácidos se han vuelto los océanos desde la Revolución Industrial por absorción de CO₂ humano.</p></div>
+      <div class="stat-card"><div class="stat-icon">🌡️</div><div class="stat-num">90<span class="stat-unit">%</span></div><p class="stat-desc">del exceso de calor causado por el cambio climático es absorbido por los océanos del planeta.</p></div>
+      <div class="stat-card"><div class="stat-icon">🌿</div><div class="stat-num">50<span class="stat-unit">%</span></div><p class="stat-desc">del oxígeno de la Tierra es producido por el océano. Respiramos gracias al mar cada día.</p></div>
+      <div class="stat-card"><div class="stat-icon">📉</div><div class="stat-num">10<span class="stat-unit">%</span></div><p class="stat-desc">de las metas del ODS 14 van en buen camino a nivel mundial, según el Informe ODS 2024 de la ONU.</p></div>
+      <div class="stat-card"><div class="stat-icon">💧</div><div class="stat-num">23<span class="stat-unit">%</span></div><p class="stat-desc">de las emisiones anuales de CO₂ humanas son absorbidas por el océano, mitigando el cambio climático.</p></div>
+    </div>
+  </div>
+  <div class="carousel-controls">
+    <button class="carousel-btn" id="prevBtn">&#8249;</button>
+    <div class="carousel-dots" id="carouselDots"></div>
+    <button class="carousel-btn" id="nextBtn">&#8250;</button>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="about-inner">
+    <div class="about-visual">
+      <div class="ocean-circle c1"></div>
+      <div class="ocean-circle c2"></div>
+      <div class="ocean-circle c3"></div>
+      <p class="ocean-label">~ profundidad media: 3,700 m ~</p>
+    </div>
+    <div class="about-text">
+      <p class="section-label">¿Qué es el ODS 14?</p>
+      <h2 class="section-title">El océano es la<br/><em>fuente de vida</em></h2>
+      <p>El Objetivo de Desarrollo Sostenible 14 busca conservar y utilizar de forma sostenible los océanos, mares y recursos marinos. Los océanos cubren más del 70% del planeta, regulan el clima, generan oxígeno y son fuente de alimento para miles de millones de personas.</p>
+      <p>Sin embargo, la contaminación, la sobrepesca, el cambio climático y la acidificación amenazan gravemente estos ecosistemas. Sin acción urgente, las consecuencias serán irreversibles para toda la humanidad.</p>
+      <blockquote class="highlight">"El océano no solo cubre la mayor parte de la Tierra — es el corazón del sistema de soporte vital del planeta."</blockquote>
+    </div>
+  </div>
+</section>
+
+<!-- METAS ZIGZAG -->
+<section id="metas">
+  <div class="section-header">
+    <p class="section-label">Compromisos globales</p>
+    <h2 class="section-title">Metas del <em>ODS 14</em></h2>
+  </div>
+  <div class="meta-zigzag">
+
+    <div class="meta-row">
+      <div class="meta-img"><div class="meta-img-inner img-m1"><div class="meta-img-icon">🏭</div><div class="meta-img-num">14.1</div></div></div>
+      <div class="meta-info"><span class="meta-tag">Contaminación</span><h3>Reducir la contaminación marina</h3><p>Prevenir y reducir significativamente la contaminación marina de todo tipo, especialmente la producida por actividades terrestres, incluidos los desechos marinos y la contaminación por nutrientes.</p></div>
+    </div>
+
+    <div class="meta-row">
+      <div class="meta-info"><span class="meta-tag">Ecosistemas</span><h3>Proteger ecosistemas marinos</h3><p>Gestionar y proteger de manera sostenible los ecosistemas marinos y costeros para evitar efectos adversos, mediante el fortalecimiento de su resiliencia y la adopción de medidas para restaurarlos.</p></div>
+      <div class="meta-img"><div class="meta-img-inner img-m2"><div class="meta-img-icon">🪸</div><div class="meta-img-num">14.2</div></div></div>
+    </div>
+
+    <div class="meta-row">
+      <div class="meta-img"><div class="meta-img-inner img-m3"><div class="meta-img-icon">⚗️</div><div class="meta-img-num">14.3</div></div></div>
+      <div class="meta-info"><span class="meta-tag">Acidificación</span><h3>Reducir la acidificación oceánica</h3><p>Reducir al mínimo los efectos de la acidificación de los océanos y hacer frente a sus consecuencias, incluso mediante una mayor cooperación científica a todos los niveles.</p></div>
+    </div>
+
+    <div class="meta-row">
+      <div class="meta-info"><span class="meta-tag">Pesca</span><h3>Pesca sostenible</h3><p>Reglamentar eficazmente la explotación pesquera y poner fin a la pesca excesiva, la pesca ilegal no declarada y no reglamentada, y las prácticas pesqueras destructivas que dañan los hábitats marinos.</p></div>
+      <div class="meta-img"><div class="meta-img-inner img-m4"><div class="meta-img-icon">🎣</div><div class="meta-img-num">14.4</div></div></div>
+    </div>
+
+    <div class="meta-row">
+      <div class="meta-img"><div class="meta-img-inner img-m5"><div class="meta-img-icon">🏝️</div><div class="meta-img-num">14.5</div></div></div>
+      <div class="meta-info"><span class="meta-tag">Conservación</span><h3>Conservar zonas costeras y marinas</h3><p>Conservar al menos el 10% de las zonas costeras y marinas, de conformidad con las leyes nacionales e internacionales y sobre la base de la mejor información científica disponible.</p></div>
+    </div>
+
+    <div class="meta-row">
+      <div class="meta-info"><span class="meta-tag">Desarrollo</span><h3>Beneficios para países en desarrollo</h3><p>Para 2030, aumentar los beneficios económicos que los pequeños Estados insulares y los países menos adelantados obtienen del uso sostenible de los recursos marinos, incluyendo la pesca y el turismo.</p></div>
+      <div class="meta-img"><div class="meta-img-inner img-m6"><div class="meta-img-icon">🌏</div><div class="meta-img-num">14.7</div></div></div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ACCIONES -->
+<section id="acciones">
+  <div class="inner">
+    <div class="acciones-header">
+      <p class="section-label">Lo que podemos hacer</p>
+      <h2 class="section-title">Acciones para <em>proteger</em> el océano</h2>
+    </div>
+    <div class="acciones-list">
+      <div class="accion-item"><div class="accion-num">01</div><div class="accion-content"><h4>Reducir el uso de plásticos de un solo uso</h4><p>Rechaza pajillas, bolsas y envases plásticos. Opta por alternativas reutilizables en tu vida cotidiana.</p></div><span class="accion-tag tag-urgente">Urgente</span></div>
+      <div class="accion-item"><div class="accion-num">02</div><div class="accion-content"><h4>Consumir productos del mar de forma responsable</h4><p>Elige pescados y mariscos con certificaciones sostenibles y rechaza especies en peligro de extinción.</p></div><span class="accion-tag tag-urgente">Urgente</span></div>
+      <div class="accion-item"><div class="accion-num">03</div><div class="accion-content"><h4>Participar en limpiezas costeras</h4><p>Únete a iniciativas comunitarias de limpieza de playas y riveras para reducir residuos que llegan al mar.</p></div><span class="accion-tag tag-medio">Mediano plazo</span></div>
+      <div class="accion-item"><div class="accion-num">04</div><div class="accion-content"><h4>Apoyar áreas marinas protegidas</h4><p>Apoya la creación y gestión de reservas marinas y zonas de veda pesquera a través de tu voto y donaciones.</p></div><span class="accion-tag tag-medio">Mediano plazo</span></div>
+      <div class="accion-item"><div class="accion-num">05</div><div class="accion-content"><h4>Reducir tu huella de carbono</h4><p>Usa transporte sostenible, ahorra energía y elige energías renovables para frenar el calentamiento oceánico.</p></div><span class="accion-tag tag-largo">Largo plazo</span></div>
+      <div class="accion-item"><div class="accion-num">06</div><div class="accion-content"><h4>Educar y concientizar a tu comunidad</h4><p>Comparte información sobre el ODS 14 y las amenazas marinas. Cada persona educada es un multiplicador de cambio.</p></div><span class="accion-tag tag-largo">Largo plazo</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- QUOTE -->
+<section id="quote">
+  <p class="quote-text">"El mar, una vez que lanza su hechizo,<br/>te mantiene en <strong>sus redes de maravilla</strong> para siempre."</p>
+  <p class="quote-author">— Jacques Yves Cousteau, explorador oceánico</p>
+</section>
+
+<!-- AMENAZAS (al final) -->
+<section id="amenazas">
+  <div class="inner">
+    <div class="threats-header">
+      <p class="section-label">Desafíos críticos</p>
+      <h2 class="section-title">Amenazas a la vida <em>submarina</em></h2>
+      <p class="threats-note">Cada tarjeta enlaza a un artículo real con datos verificados — haz clic para leer la fuente original</p>
+    </div>
+    <div class="threats-grid">
+      <div class="threat-card t1">
+        <div class="threat-icon">🏭</div>
+        <h3>Contaminación plástica</h3>
+        <p>Más de 17 millones de toneladas de plástico contaminan los océanos actualmente. Para 2040 esta cifra podría triplicarse, afectando a más de 800 especies marinas y causando daños irreversibles en la cadena alimentaria.</p>
+        <a href="https://news.un.org/es/story/2021/10/1498752" target="_blank" rel="noopener" class="threat-link">ONU Noticias — Informe sobre plásticos oceánicos</a>
+      </div>
+      <div class="threat-card t2">
+        <div class="threat-icon">🎣</div>
+        <h3>Sobrepesca</h3>
+        <p>El 33% de los stocks pesqueros mundiales está sobreexplotado. En 2017 se extrajeron 92.5 millones de toneladas de peces. En el Mediterráneo occidental hasta el 80% de los stocks sufre sobrepesca extrema documentada.</p>
+        <a href="https://www.nationalgeographic.com.es/medio-ambiente/principales-amenazas-que-acechan-a-oceanos_15586" target="_blank" rel="noopener" class="threat-link">National Geographic — Amenazas a los océanos</a>
+      </div>
+      <div class="threat-card t3">
+        <div class="threat-icon">🌡️</div>
+        <h3>Cambio climático</h3>
+        <p>El informe Estado del Océano 2024 de la UNESCO confirma que la temperatura oceánica supera en zonas los 2°C preindustriales. El calentamiento se duplicó en los últimos 20 años, desencadenando blanqueamiento masivo de corales.</p>
+        <a href="https://es.mongabay.com/2024/06/oceanos-en-crisis-informe-unesco-alerta-sobre-calentamiento-contaminacion-del-mar/" target="_blank" rel="noopener" class="threat-link">Mongabay — Informe UNESCO Océanos 2024</a>
+      </div>
+      <div class="threat-card t4">
+        <div class="threat-icon">⚗️</div>
+        <h3>Acidificación oceánica</h3>
+        <p>El pH medio del océano es hoy 8.1, aproximadamente un 30% más ácido que en la época preindustrial. Esto disuelve conchas y esqueletos de organismos marinos, amenazando toda la biodiversidad marina coralina.</p>
+        <a href="https://www.iberdrola.com/sostenibilidad/comprometidos-objetivos-desarrollo-sostenible/ods-14-vida-submarina" target="_blank" rel="noopener" class="threat-link">Iberdrola — Acidificación y ODS 14</a>
+      </div>
+      <div class="threat-card t5">
+        <div class="threat-icon">🛢️</div>
+        <h3>Vertidos químicos</h3>
+        <p>Fertilizantes y pesticidas generan zonas hipóxicas (zonas muertas) en el océano. La eutrofización por nitrógeno y fósforo, proveniente principalmente de la agricultura, provoca colapsos ecosistémicos a nivel global.</p>
+        <a href="https://www.bbva.com/es/sostenibilidad/estas-son-las-causas-y-las-consecuencias-de-la-contaminacion-del-mar/" target="_blank" rel="noopener" class="threat-link">BBVA — Causas de la contaminación marina</a>
+      </div>
+      <div class="threat-card t6">
+        <div class="threat-icon">⚓</div>
+        <h3>Destrucción del hábitat</h3>
+        <p>La pesca de arrastre y dragas destruyen arrecifes, praderas de posidonia y hábitats bentónicos que tardaron siglos en formarse. Menos del 5% de los océanos cuentan con protección real y efectiva hasta hoy.</p>
+        <a href="https://www.nationalgeographic.com.es/medio-ambiente/principales-amenazas-que-acechan-a-oceanos_15586" target="_blank" rel="noopener" class="threat-link">National Geographic — Destrucción de hábitats</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p>🌊 <strong>ODS 14 — Vida Submarina</strong> · Agenda 2030 para el Desarrollo Sostenible</p>
+  <p style="margin-top:.5rem">
+    Fuentes: <a href="https://www.un.org/sustainabledevelopment/es/oceans/" target="_blank" rel="noopener">ONU Océanos</a> ·
+    <a href="https://sdgs.un.org/goals/goal14" target="_blank" rel="noopener">SDGs Oficiales</a> ·
+    <a href="https://agenda2030lac.org/es/ods/14-vida-submarina" target="_blank" rel="noopener">CEPAL Agenda 2030</a> ·
+    <a href="https://www.pactomundial.org/ods/14-vida-submarina/" target="_blank" rel="noopener">Pacto Mundial ONU</a>
+  </p>
+</footer>
+
+<script>
+  const track = document.getElementById('carouselTrack');
+  const dotsEl = document.getElementById('carouselDots');
+  const cards  = track.querySelectorAll('.stat-card');
+  let current = 0;
+
+  function getVisible() {
+    if (window.innerWidth < 600)  return 1;
+    if (window.innerWidth < 900)  return 2;
+    if (window.innerWidth < 1200) return 3;
+    return 4;
+  }
+  function totalPages() { return Math.ceil(cards.length / getVisible()); }
+
+  function buildDots() {
+    dotsEl.innerHTML = '';
+    for (let i = 0; i < totalPages(); i++) {
+      const d = document.createElement('div');
+      d.className = 'dot' + (i === current ? ' active' : '');
+      d.addEventListener('click', () => goTo(i));
+      dotsEl.appendChild(d);
+    }
+  }
+
+  function goTo(n) {
+    const pages = totalPages();
+    current = ((n % pages) + pages) % pages;
+    const vis = getVisible();
+    const gap = 24;
+    const cardW = cards[0].offsetWidth + gap;
+    track.style.transform = `translateX(-${current * vis * cardW}px)`;
+    buildDots();
+  }
+
+  document.getElementById('prevBtn').addEventListener('click', () => goTo(current - 1));
+  document.getElementById('nextBtn').addEventListener('click', () => goTo(current + 1));
+  window.addEventListener('resize', () => { current = 0; goTo(0); });
+
+  buildDots();
+  setInterval(() => goTo(current + 1), 4500);
+</script>
+</body>
+</html>
